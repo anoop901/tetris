@@ -1,56 +1,33 @@
-import {TetrominoType, tetrominoShapeMap, tetrominoKickTableMap} from "./TetrominoData";
+import { TetrominoType, tetrominoShapeMap } from "../data/tetrominoData";
+import { BlockColor, Block, IndexedBlock } from '../block';
+import Piece from '../piece';
 
-enum BlockColor {
-    IColor,
-    JColor,
-    LColor,
-    OColor,
-    SColor,
-    TColor,
-    ZColor,
-}
-
-class Block {
-    readonly color: BlockColor;
-    constructor(color: BlockColor) {
-        this.color = color;
-    }
-}
-
-class IndexedBlock {
-    readonly block: Block;
-    readonly row: number;
-    readonly col: number;
-
-    constructor(block: Block, row: number, col: number) {
-        this.block = block;
-        this.row = row;
-        this.col = col;
-    }
-}
-
-interface Piece<T extends Piece<T>> {
-    getBlocks(): Iterable<IndexedBlock>;
-    translated(dRow: number, dCol: number): T;
-    rotatedCW(): T;
-    rotatedCCW(): T;
-}
-
-interface PieceRotationSystem<T extends Piece<T>> {
-    rotatedCW(piece: T, isValidFn: (piece: Piece<T>) => boolean): T;
-    rotatedCCW(piece: T, isValidFn: (piece: Piece<T>) => boolean): T;
-
-}
-
+/// Information about a falling tetromino, including its type, current position,
+/// and current orientation. This type is immutable.
 export class Tetromino implements Piece<Tetromino> {
 
+    /// The type of tetromino.
     readonly tetrominoType: TetrominoType;
+
+    /// The row number of the center of the tetromino. (0 is bottom row.)
     readonly row: number;
+
+    /// The column number of the center of the tetromino. (0 is leftmost column.)
     readonly col: number;
+
     // TODO: maybe make this a class Orientation which can be rotated between predefined states
+    /// The orientation of the tetromino.
+    ///
+    /// - 0 represents the spawn position
+    /// - 1 represents an orientation rotated clockwise 90 degrees from the
+    ///   spawn position
+    /// - 2 represents an oriented rotated 180 degrees from the spawn position
+    /// - 3 represents an orientation rotated counter-clockwise 90 degrees from
+    ///   the spawn position
     readonly orientation: number;
 
-
+    /// Creates a tetromino with the given type, center row and column, and
+    /// orientation.
     constructor(tetrominoType: TetrominoType, row: number, col: number, orientation: number) {
         this.tetrominoType = tetrominoType;
         this.row = row;
@@ -75,7 +52,6 @@ export class Tetromino implements Piece<Tetromino> {
                 case 3:
                     yield new IndexedBlock(block, baseBlockPos[1], -baseBlockPos[0]);
                     break;
-
             }
         }
     }    
