@@ -1,4 +1,4 @@
-import Piece from './piece';
+import Piece from './piece/piece';
 
 interface PieceRotationSystem<T extends Piece<T>> {
     rotatedCW(piece: T, isValidFn: (piece: Piece<T>) => boolean): T;

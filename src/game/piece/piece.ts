@@ -1,4 +1,4 @@
-import { IndexedBlock } from './block'
+import { IndexedBlock } from '../block'
 
 /// Information about an arbitrary falling piece.
 ///
@@ -17,12 +17,11 @@ export default interface Piece<T extends Piece<T>> {
     translated(dRow: number, dCol: number): T;
 
     /// Returns the piece that this piece would become if it is rotated
-    /// clockwise by 90 degrees. If the piece can't rotate, returns the same
-    /// piece back.
+    /// clockwise. If the piece can't rotate, returns the same piece back.
     rotatedCW(): T;
 
     /// Returns the piece that this piece would become if it is rotated
-    /// counter-clockwise by 90 degrees. If the piece can't rotate, returns the
-    /// same piece back.
+    /// counter-clockwise. If the piece can't rotate, returns the same piece
+    /// back.
     rotatedCCW(): T;
 }

@@ -1,5 +1,4 @@
-import { Tetromino } from "./game/piece/tetromino";
-import { TetrominoType } from "./game/data/tetrominoData";
+import { Tetromino, TetrominoType } from "./game/piece/tetromino";
 
 const canvas = document.createElement('canvas');
 document.body.appendChild(canvas);
