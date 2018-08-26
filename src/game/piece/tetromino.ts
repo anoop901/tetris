@@ -3,7 +3,7 @@ import Piece from './piece';
 
 /// Information about a falling tetromino, including its type, current position,
 /// and current orientation. This type is immutable.
-export class Tetromino implements Piece<Tetromino> {
+export class Tetromino implements Piece {
 
     /// The type of tetromino.
     readonly tetrominoType: TetrominoType;
@@ -38,7 +38,7 @@ export class Tetromino implements Piece<Tetromino> {
         // TODO: Make a color map
         const block: Block = new Block(BlockColor.IColor);
         for (const baseBlockPos of tetrominoShapeMap.get(this.tetrominoType)!) {
-            switch(this.orientation) {
+            switch (this.orientation) {
                 case 0:
                     yield new IndexedBlock(block, baseBlockPos[0], baseBlockPos[1]);
                     break;
@@ -53,18 +53,34 @@ export class Tetromino implements Piece<Tetromino> {
                     break;
             }
         }
-    }    
+    }
 
     translated(dRow: number, dCol: number): Tetromino {
         return new Tetromino(this.tetrominoType, this.row + dRow, this.col + dCol, this.orientation);
     }
 
-    rotatedCW(): Tetromino {
-        return new Tetromino(this.tetrominoType, this.row, this.col, (this.orientation + 1) % 4);
+    rotatedCW(isValidFn: (piece: Piece) => boolean): Piece {
+        const kickTable: KickTable = tetrominoKickTableMap.get(this.tetrominoType)!;
+        const rotatedPiece = new Tetromino(this.tetrominoType, this.row, this.col, (this.orientation + 1) % 4);
+        return Tetromino.rotateBetween(this, rotatedPiece, kickTable, isValidFn);
     }
 
-    rotatedCCW(): Tetromino {
-        return new Tetromino(this.tetrominoType, this.row, this.col, (this.orientation + 3) % 4);
+    rotatedCCW(isValidFn: (piece: Piece) => boolean): Piece {
+        const kickTable: KickTable = tetrominoKickTableMap.get(this.tetrominoType)!;
+        const rotatedPiece = new Tetromino(this.tetrominoType, this.row, this.col, (this.orientation + 3) % 4);
+        return Tetromino.rotateBetween(this, rotatedPiece, kickTable, isValidFn);
+    }
+
+    private static rotateBetween(state1: Tetromino, state2: Tetromino, kickTable: KickTable, isValidFn: (piece: Piece) => boolean): Tetromino {
+        for (let i = 0; i < kickTable[state1.orientation].length; i++) {
+            const rowOffset = kickTable[state1.orientation][i][0] - kickTable[state2.orientation][i][0];
+            const colOffset = kickTable[state1.orientation][i][1] - kickTable[state2.orientation][i][1];
+            const candidatePiece: Tetromino = state2.translated(rowOffset, colOffset);
+            if (isValidFn(candidatePiece)) {
+                return candidatePiece;
+            }
+        }
+        return state1;
     }
 }
 
@@ -78,7 +94,7 @@ export enum TetrominoType {
 /// For each [r, c] in this array, it represents that if the piece were centered
 /// at row centerRow and column centerColumn, it would contain a block at row
 /// (centerRow + r) and column (centerColumn + c).
-export type PieceShape = [number, number][];
+type PieceShape = [number, number][];
 
 const I_BLOCKS: PieceShape = [[0, -1], [0, 0], [0, 1], [0, 2]];
 const J_BLOCKS: PieceShape = [[1, -1], [0, -1], [0, 0], [0, 1]];
@@ -94,7 +110,7 @@ const Z_BLOCKS: PieceShape = [[1, -1], [1, 0], [0, 0], [0, 1]];
 /// Rotating from state A to state B calculate the offset sequence by taking
 /// (offset row, offset col) := (table[A][n][0] - table[B][n][0], table[A][n][1] - table[B][n][1])
 /// where each n is attempted in order 0 ... N
-export type KickTable = [number, number][][];
+type KickTable = [number, number][][];
 
 const O_KICK_OFFSET_TABLE: KickTable = [
     [[0, 0]], // INITIAL
@@ -116,7 +132,7 @@ const J_L_S_T_Z_KICK_OFFSET_TABLE: KickTable = [
 ];
 
 /// A map that maps each tetromino type to its shape, in spawn orientation.
-export const tetrominoShapeMap:Map<TetrominoType, PieceShape> = new Map();
+const tetrominoShapeMap: Map<TetrominoType, PieceShape> = new Map();
 tetrominoShapeMap.set(TetrominoType.I, I_BLOCKS);
 tetrominoShapeMap.set(TetrominoType.J, J_BLOCKS);
 tetrominoShapeMap.set(TetrominoType.L, L_BLOCKS);
@@ -126,7 +142,7 @@ tetrominoShapeMap.set(TetrominoType.T, T_BLOCKS);
 tetrominoShapeMap.set(TetrominoType.Z, Z_BLOCKS);
 
 /// A map that maps each tetromino type to its kick table.
-export const tetrominoKickTableMap:Map<TetrominoType, KickTable> = new Map();
+const tetrominoKickTableMap: Map<TetrominoType, KickTable> = new Map();
 tetrominoKickTableMap.set(TetrominoType.I, I_KICK_OFFSET_TABLE);
 tetrominoKickTableMap.set(TetrominoType.J, J_L_S_T_Z_KICK_OFFSET_TABLE);
 tetrominoKickTableMap.set(TetrominoType.L, J_L_S_T_Z_KICK_OFFSET_TABLE);
