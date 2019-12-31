@@ -8,10 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: Run a one-line script
-      run: echo Hello, world!
+    - uses: actions/checkout@v2.0.0
     - name: Run a multi-line script
       run: |
-        pwd
-        ls -la
+        npm run build
+        find dist
